@@ -37,3 +37,9 @@ data class Wiki(
 }
 
 ```
+
+To use in your project:
+
+```
+implementation "com.ekeitho.uni:uni:1.0.1"
+```
