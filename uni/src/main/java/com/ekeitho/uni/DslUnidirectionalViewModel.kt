@@ -1,7 +1,6 @@
 package com.ekeitho.uni
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,7 +23,7 @@ fun <State, Action> uniViewModelDSL(
         viewModelScope.launch {
             for (sideEffect in sideEffects) {
                 sideEffect.observeActionToAction(actionFlow).collect {
-                    onAction(it)
+                    dispatch(it)
                 }
             }
         }
@@ -32,14 +31,16 @@ fun <State, Action> uniViewModelDSL(
 }
 
 class DslUnidirectionalViewModel<State, Action> constructor(
-    override val emptyState: State,
-    private val stateLiveDate: MutableLiveData<State> = MutableLiveData(),
-    override val actionFlow: MutableSharedFlow<Action> = MutableSharedFlow()
+    private val emptyState: State,
 ) : ViewModel(), UnidirectionalViewModel<State, Action> {
 
     private val mutex = Mutex()
     private var reducer: ((action: Action, state: State) -> State)? = null
     private var mSideEffects: MutableList<SideEffect<Action>> = mutableListOf()
+
+    override val actionFlow: MutableSharedFlow<Action> = MutableSharedFlow()
+    private val mLiveDataState: MutableLiveData<State> = MutableLiveData()
+    override val liveDataState: LiveData<State> = mLiveDataState
 
     fun effect(lambda: (actionFlow: Flow<Action>) -> Flow<Action>) {
         mSideEffects.add(object : SideEffect<Action> {
@@ -56,12 +57,12 @@ class DslUnidirectionalViewModel<State, Action> constructor(
 
     override var sideEffects: List<SideEffect<Action>> = mSideEffects
 
-    override fun onAction(action: Action) {
+    override fun dispatch(action: Action) {
         viewModelScope.launch {
             mutex.withLock {
                 actionFlow.emit(action)
-                stateLiveDate.value =
-                    reduce(action, stateLiveDate.value ?: checkNotNull(emptyState))
+                mLiveDataState.value =
+                    reduce(action, mLiveDataState.value ?: checkNotNull(emptyState))
             }
         }
     }
@@ -70,8 +71,4 @@ class DslUnidirectionalViewModel<State, Action> constructor(
         return reducer?.let { it(action, state) } ?: state
     }
 
-    @Composable
-    override fun observeAsState(): androidx.compose.runtime.State<State> {
-        return stateLiveDate.observeAsState(initial = emptyState)
-    }
 }
