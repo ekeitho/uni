@@ -1,4 +1,4 @@
-![uni github actions](https://github.com/ekeitho/uni/actions/workflows/android.yaml/badge.svg)
+![uni github actions](https://github.com/ekeitho/uni/actions/workflows/android.yml/badge.svg)
 
 # uni
 Unidirectional "Flow" architecture
