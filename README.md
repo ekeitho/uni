@@ -32,11 +32,12 @@ data class Wiki(private val wikiService: WikiService) {
             }
         }
 }
-
 ```
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ekeitho.uni/uni/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ekeitho.uni/uni)
 
 To use in your project:
 
 ```
-implementation "com.ekeitho.uni:uni:1.0.2"
+implementation "com.ekeitho.uni:uni:$latest-version"
 ```
