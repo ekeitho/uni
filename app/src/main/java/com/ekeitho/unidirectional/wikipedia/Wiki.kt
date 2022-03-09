@@ -3,6 +3,7 @@ package com.ekeitho.unidirectional.wikipedia
 import com.ekeitho.uni.uniViewModelDSL
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 
@@ -21,13 +22,11 @@ data class Wiki(
     fun getViewModel() =
         uniViewModelDSL<State, Action>(State()) {
             effect { flow ->
-                flow.flatMapLatest { action ->
-                    when (action) {
-                        Action.FetchRandomWikiAction ->
-                            wikiService.getRandomWiki().map { Action.WikiResponseAction(it) }
-                        else -> emptyFlow()
+                flow
+                    .filterIsInstance<Action.FetchRandomWikiAction>()
+                    .flatMapLatest {
+                        wikiService.getRandomWiki().map { Action.WikiResponseAction(it) }
                     }
-                }
             }
 
             reducer { action, state ->
