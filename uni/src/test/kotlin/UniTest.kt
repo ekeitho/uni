@@ -23,34 +23,30 @@ class UniTest {
     sealed class Action {
         data class UpdatePageNum(val num: Int) : Action()
         data class SideEffectNum(val num: Int) : Action()
-        data class TestSend(val p : Int): Action()
-        data class TestNum(val num: Int): Action()
+        object TestSend : Action()
+        data class TestNum(val num: Int) : Action()
     }
 
     @get:Rule
     val instantTaskRule = InstantTaskExecutorRule()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @get:Rule
     var coroutinesTestRule = CoroutinesTestRule()
 
-
     @Test
-    fun testReduce_viewModel() {
+    fun testWithMultipleSideEffects() {
         val vm = uniViewModelDSL<State, Action>(State()) {
             effect { flow ->
                 flow
                     .filterIsInstance<Action.UpdatePageNum>()
-                    .map { action ->
-                        Action.SideEffectNum(action.num + 3)
-                    }
+                    .map { Action.SideEffectNum(it.num + 3) }
             }
 
             effect { flow ->
                 flow
                     .filterIsInstance<Action.TestSend>()
-                    .map {
-                        Action.TestNum(1)
-                    }
+                    .map { Action.TestNum(1) }
             }
 
             reducer { action, state ->
@@ -65,16 +61,81 @@ class UniTest {
 
         val test = vm.liveDataState.test()
 
-        //assert(vm.sideEffects.size == 2)
+        vm.dispatch(Action.UpdatePageNum(10))
+        vm.dispatch(Action.UpdatePageNum(5))
+        vm.dispatch(Action.TestSend)
+
+        // demonstrates that when we use side-effects state can multiple 2 or more times
+        // ie) dispatching UpdatePageNum(10) with a side-effect listening to this action produces two emissions
+        // 1st emission reducing this action & then 2nd coming from a side-effect that maps the SideEffectNum action
+
+        test.assertValueHistory(
+            State(10, 0),
+            State(10, 13),
+
+            State(5, 13),
+            State(5, 8),
+            State(5, 8),
+            State(5, 8, 1)
+        )
+    }
+
+
+    @Test
+    fun testSideEffectTriggeringAnotherSideEffect() {
+        val vm = uniViewModelDSL<State, Action>(State()) {
+            effect { flow ->
+                flow
+                    .filterIsInstance<Action.UpdatePageNum>()
+                    .map { Action.SideEffectNum(it.num + 3) }
+            }
+
+            effect { flow ->
+                flow
+                    .filterIsInstance<Action.SideEffectNum>()
+                    .map { Action.TestNum(it.num + 3) }
+            }
+
+            reducer { action, state ->
+                when (action) {
+                    is Action.UpdatePageNum -> state.copy(pageNum = action.num)
+                    is Action.SideEffectNum -> state.copy(sideEffectNum = action.num)
+                    is Action.TestNum -> state.copy(testNum = action.num)
+                    else -> state
+                }
+            }
+        }
+
+        val test = vm.liveDataState.test()
 
         vm.dispatch(Action.UpdatePageNum(10))
-        test.assertValue(State(10, 13))
 
-        vm.dispatch(Action.UpdatePageNum(5))
-        test.assertValue(State(5, 8))
+        test.assertValueHistory(
+            State(10, 0),
+            State(10, 13),
+            State(10, 13, 16),
+        )
+    }
 
-        vm.dispatch(Action.TestSend(0))
-        test.assertValue(State(5, 8, 1))
+    @Test
+    fun testThousandsOfDispatches() {
+        val vm = uniViewModelDSL<State, Action>(State()) {
+
+            reducer { action, state ->
+                when (action) {
+                    is Action.UpdatePageNum -> state.copy(pageNum = action.num)
+                    else -> state
+                }
+            }
+        }
+
+        val test = vm.liveDataState.test()
+
+        for (i in 0..10000) {
+            vm.dispatch(Action.UpdatePageNum(i))
+        }
+
+        assert(test.valueHistory() == (0..10000).map { State(pageNum = it, 0) })
     }
 }
 
