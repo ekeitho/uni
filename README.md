@@ -38,5 +38,5 @@ data class Wiki(private val wikiService: WikiService) {
 To use in your project:
 
 ```
-implementation "com.ekeitho.uni:uni:1.0.1"
+implementation "com.ekeitho.uni:uni:1.0.2"
 ```
