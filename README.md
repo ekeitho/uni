@@ -34,6 +34,22 @@ data class Wiki(private val wikiService: WikiService) {
 }
 ```
 
+Then in Compose, using whichever DI framework, in this case using Koins `getViewModel` we can do...
+
+```kotlin
+setContent {
+    val vm = getViewModel<DslUnidirectionalViewModel<Wiki.State, Wiki.Action>>()
+    val state by vm.liveDataState.observeAsState(initial = Wiki.State())
+
+    WikiScreen(
+        wikiResponse = state?.wikiResponse,
+        onButtonTap = {
+            vm.dispatch(Wiki.Action.FetchRandomWikiAction)
+        }
+    )
+}
+```
+
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ekeitho.uni/uni/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ekeitho.uni/uni)
 
 To use in your project:
