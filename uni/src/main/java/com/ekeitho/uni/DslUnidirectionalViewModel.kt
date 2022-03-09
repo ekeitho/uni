@@ -20,11 +20,10 @@ fun <State, Action> uniViewModelDSL(
     lambda(vm)
 
     return vm.apply {
-        viewModelScope.launch {
-            for (sideEffect in sideEffects) {
-                sideEffect.observeActionToAction(actionFlow).collect {
-                    dispatch(it)
-                }
+        for (sideEffect in sideEffects) {
+            val flow = sideEffect.observeActionToAction(actionFlow)
+            viewModelScope.launch {
+                flow.collect { dispatch(it) }
             }
         }
     }

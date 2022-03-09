@@ -15,14 +15,13 @@ abstract class UniViewModel<State, Action>(
 
     private val mutex = Mutex()
     private val stateLiveDate: MutableLiveData<State> = MutableLiveData()
-    override val actionFlow: MutableSharedFlow<Action> = MutableSharedFlow()
+    final override val actionFlow: MutableSharedFlow<Action> = MutableSharedFlow()
 
     init {
-        viewModelScope.launch {
-            for (sideEffect in sideEffects) {
-                sideEffect.observeActionToAction(actionFlow).collect {
-                    dispatch(it)
-                }
+        for (sideEffect in sideEffects) {
+            val flow = sideEffect.observeActionToAction(actionFlow)
+            viewModelScope.launch {
+                flow.collect { dispatch(it) }
             }
         }
     }

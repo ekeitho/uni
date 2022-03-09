@@ -45,7 +45,8 @@ android {
 
 dependencies {
 
-    implementation "com.ekeitho.uni:uni:1.0.1"
+    //implementation "com.ekeitho.uni:uni:1.0.1"
+    implementation(project(":uni"))
 
     implementation "androidx.compose.runtime:runtime-rxjava3:1.1.1"
 
