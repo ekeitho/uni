@@ -1,7 +1,7 @@
 ![uni github actions](https://github.com/ekeitho/uni/actions/workflows/android.yml/badge.svg)
 
 # uni
-Unidirectional "Flow" architecture
+Unidirectional "Flow" architecture. Main intention of usage is for Android.
 
 An example usage
 ```kotlin
