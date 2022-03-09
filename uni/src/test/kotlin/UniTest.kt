@@ -113,7 +113,7 @@ class UniTest {
         test.assertValueHistory(
             State(10, 0),
             State(10, 13),
-            State(10, 13, 17),
+            State(10, 13, 16),
         )
     }
 
