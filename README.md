@@ -1,3 +1,5 @@
+![uni github actions](https://github.com/ekeitho/uni/actions/workflows/android.yaml/badge.svg)
+
 # uni
 Unidirectional "Flow" architecture
 
