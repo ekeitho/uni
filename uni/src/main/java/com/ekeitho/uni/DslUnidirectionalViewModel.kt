@@ -49,7 +49,6 @@ class DslUnidirectionalViewModel<State, Action> constructor(
         })
     }
 
-    // i have to create the object first for DSL style & then allow to override
     fun reducer(lambda: ((action: Action, state: State) -> State)) {
         reducer = lambda
     }
