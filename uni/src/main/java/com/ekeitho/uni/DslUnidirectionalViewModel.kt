@@ -4,12 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 fun <State, Action> uniViewModelDSL(
     emptyState: State,
@@ -23,7 +25,9 @@ fun <State, Action> uniViewModelDSL(
         for (sideEffect in sideEffects) {
             val flow = sideEffect.observeActionToAction(actionFlow)
             viewModelScope.launch {
-                flow.collect { dispatch(it) }
+                withContext(Dispatchers.IO) {
+                    flow.collect { dispatch(it) }
+                }
             }
         }
     }
