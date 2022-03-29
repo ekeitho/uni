@@ -1,6 +1,9 @@
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.viewModelScope
+import com.ekeitho.uni.DslUnidirectionalViewModel
 import com.ekeitho.uni.uniViewModelDSL
 import com.jraska.livedata.test
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.filterIsInstance
@@ -36,7 +39,7 @@ class UniTest {
 
     @Test
     fun testWithMultipleSideEffects() {
-        val vm = uniViewModelDSL<State, Action>(State()) {
+        val vm = testUniViewModelDSL<State, Action>(State()) {
             effect { flow ->
                 flow
                     .filterIsInstance<Action.UpdatePageNum>()
@@ -83,7 +86,7 @@ class UniTest {
 
     @Test
     fun testSideEffectTriggeringAnotherSideEffect() {
-        val vm = uniViewModelDSL<State, Action>(State()) {
+        val vm = testUniViewModelDSL<State, Action>(State()) {
             effect { flow ->
                 flow
                     .filterIsInstance<Action.UpdatePageNum>()
@@ -119,7 +122,7 @@ class UniTest {
 
     @Test
     fun testThousandsOfDispatches() {
-        val vm = uniViewModelDSL<State, Action>(State()) {
+        val vm = testUniViewModelDSL<State, Action>(State()) {
 
             reducer { action, state ->
                 when (action) {
@@ -138,6 +141,13 @@ class UniTest {
         assert(test.valueHistory() == (0..10000).map { State(pageNum = it, 0) })
     }
 }
+
+private fun <State, Action> testUniViewModelDSL(
+    emptyState: State,
+    dispatcher: CoroutineDispatcher = Dispatchers.Main,
+    lambda: DslUnidirectionalViewModel<State, Action>.() -> Unit,
+) =
+    uniViewModelDSL<State, Action>(emptyState, dispatcher, lambda)
 
 
 @ExperimentalCoroutinesApi
