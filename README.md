@@ -1,7 +1,7 @@
 # uni
 
 [![uni github actions](https://github.com/ekeitho/uni/actions/workflows/android.yml/badge.svg)](https://github.com/ekeitho/uni/actions/workflows/android.yml)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ekeitho.uni/uni/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.ekeitho.uni/uni)
+[![Maven Central](https://img.shields.io/maven-central/v/com.ekeitho.uni/uni)](https://central.sonatype.com/artifact/com.ekeitho.uni/uni)
 
 A tiny unidirectional data flow architecture for Android, built on Kotlin coroutines
 `Flow`, `LiveData`, and the Jetpack `ViewModel`. It follows the same idea as Redux and
