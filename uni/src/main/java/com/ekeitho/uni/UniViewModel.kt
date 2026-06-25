@@ -12,7 +12,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-abstract class UniViewModel<State, Action>(
+abstract class UniViewModel<State : UniState, Action : UniAction>(
     private val emptyState: State,
     private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel(), UnidirectionalViewModel<State, Action> {

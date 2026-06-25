@@ -14,7 +14,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
-fun <State, Action> uniViewModelDSL(
+fun <State : UniState, Action : UniAction> uniViewModelDSL(
   emptyState: State,
   coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
   lambda: DslUnidirectionalViewModel<State, Action>.() -> Unit,
@@ -39,7 +39,7 @@ fun <State, Action> uniViewModelDSL(
  * This version exists in case you want to return your own type that extends from DslUnidirectionalViewModel.
  * Returning your own type may be useful when injecting unique dependencies in your tree.
  */
-fun <State, Action, DSL : DslUnidirectionalViewModel<State, Action>> uniViewModelDSL(
+fun <State : UniState, Action : UniAction, DSL : DslUnidirectionalViewModel<State, Action>> uniViewModelDSL(
   customVm: DSL,
   coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
   lambda: DSL.() -> Unit,
@@ -63,7 +63,7 @@ fun <State, Action, DSL : DslUnidirectionalViewModel<State, Action>> uniViewMode
  * Class is open in case you need unique types that extend from [DslUnidirectionalViewModel] which
  * may be useful when wanting unique types in your DI tree.
  */
-open class DslUnidirectionalViewModel<State, Action> constructor(
+open class DslUnidirectionalViewModel<State : UniState, Action : UniAction> constructor(
   private val emptyState: State,
 ) : ViewModel(), UnidirectionalViewModel<State, Action> {
 
