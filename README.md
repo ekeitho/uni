@@ -12,6 +12,15 @@ database, timers) by mapping actions back into more actions.
 The whole library is a few hundred lines. There is no annotation processor, no code
 generation, and no required DI framework.
 
+## Why I built this
+
+I have always loved DSL based APIs. I find them very readable and easy to understand,
+and they make intent obvious. I wanted that same feeling for state on Android. You
+declare your effects, and each one triggers on an action, performs its task, maps to
+another action, and that updates the state. Much like Redux, the flow is straightforward
+and easy to reason about. I had wanted something like this for a long time, so I built it
+and wanted to share where it came from.
+
 ## Core concepts
 
 | Concept | What it is |
