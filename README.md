@@ -25,8 +25,8 @@ and wanted to share where it came from.
 
 | Concept | What it is |
 |---------|------------|
-| **State** | An immutable snapshot of everything the screen needs to render. Usually a `data class`. |
-| **Action** | Something that happened: a tap, a response coming back, a timer firing. Usually a `sealed class`. |
+| **State** | An immutable snapshot of everything the screen needs to render. A `data class` that implements `UniState`. |
+| **Action** | Something that happened: a tap, a response coming back, a timer firing. A `sealed class` that implements `UniAction`, which keeps your reducer's `when` exhaustive. |
 | **reducer** | A pure function `(action, state) -> state`. The only place state changes. No side effects. |
 | **effect** | A function `Flow<Action> -> Flow<Action>`. It watches the actions flowing through the ViewModel and produces new actions, which is where async work lives. |
 
@@ -78,9 +78,9 @@ builder. Here is a screen that loads a random Wikipedia article.
 ```kotlin
 data class Wiki(private val wikiService: WikiService) {
 
-    data class State(val wikiResponse: WikiResponse? = null)
+    data class State(val wikiResponse: WikiResponse? = null) : UniState
 
-    sealed class Action {
+    sealed class Action : UniAction {
         object FetchRandomWikiAction : Action()
         data class WikiResponseAction(val wikiResponse: WikiResponse) : Action()
     }
@@ -166,6 +166,9 @@ If you need a unique type in your DI graph, or you want to inject extra dependen
 extend `DslUnidirectionalViewModel` and pass your instance to the builder overload.
 
 ```kotlin
+data class MyState(/* ... */) : UniState
+sealed class MyAction : UniAction { /* ... */ }
+
 class MyViewModel(
     private val repo: MyRepository,
 ) : DslUnidirectionalViewModel<MyState, MyAction>(MyState())
