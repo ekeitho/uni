@@ -142,6 +142,13 @@ class UniTest {
 
         assert(test.valueHistory() == (0..10000).map { State(pageNum = it, 0) })
     }
+
+    @Test(expected = IllegalStateException::class)
+    fun testBuildingWithoutReducerThrows() {
+        testUniViewModelDSL<State, Action>(State()) {
+            // no reducer provided on purpose
+        }
+    }
 }
 
 private fun <State : UniState, Action : UniAction> testUniViewModelDSL(
