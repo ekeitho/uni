@@ -5,7 +5,6 @@ import com.ekeitho.uni.UniAction
 import com.ekeitho.uni.UniState
 import com.ekeitho.uni.uniViewModelDSL
 import com.jraska.livedata.test
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.filterIsInstance
@@ -42,13 +41,13 @@ class UniTest {
     @Test
     fun testWithMultipleSideEffects() {
         val vm = testUniViewModelDSL<State, Action>(State()) {
-            effect { flow ->
+            effect(Dispatchers.Main) { flow ->
                 flow
                     .filterIsInstance<Action.UpdatePageNum>()
                     .map { Action.SideEffectNum(it.num + 3) }
             }
 
-            effect { flow ->
+            effect(Dispatchers.Main) { flow ->
                 flow
                     .filterIsInstance<Action.TestSend>()
                     .map { Action.TestNum(1) }
@@ -89,13 +88,13 @@ class UniTest {
     @Test
     fun testSideEffectTriggeringAnotherSideEffect() {
         val vm = testUniViewModelDSL<State, Action>(State()) {
-            effect { flow ->
+            effect(Dispatchers.Main) { flow ->
                 flow
                     .filterIsInstance<Action.UpdatePageNum>()
                     .map { Action.SideEffectNum(it.num + 3) }
             }
 
-            effect { flow ->
+            effect(Dispatchers.Main) { flow ->
                 flow
                     .filterIsInstance<Action.SideEffectNum>()
                     .map { Action.TestNum(it.num + 3) }
@@ -153,10 +152,9 @@ class UniTest {
 
 private fun <State : UniState, Action : UniAction> testUniViewModelDSL(
     emptyState: State,
-    dispatcher: CoroutineDispatcher = Dispatchers.Main,
     lambda: DslUnidirectionalViewModel<State, Action>.() -> Unit,
 ) =
-    uniViewModelDSL<State, Action>(emptyState, dispatcher, lambda)
+    uniViewModelDSL<State, Action>(emptyState, lambda)
 
 
 @ExperimentalCoroutinesApi

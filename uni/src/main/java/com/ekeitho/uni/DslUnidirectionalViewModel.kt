@@ -27,13 +27,13 @@ internal const val MISSING_REDUCER_MESSAGE =
 /**
  * Builds a [DslUnidirectionalViewModel] from an [emptyState] and a DSL block where you
  * declare your [DslUnidirectionalViewModel.reducer] and any [DslUnidirectionalViewModel.effect]s.
- * Effects are collected on [coroutineDispatcher], which defaults to [Dispatchers.IO].
+ * Each effect is collected on its own [SideEffect.dispatcher] (defaulting to [Dispatchers.IO]),
+ * so with no effects everything stays on [viewModelScope].
  *
  * @throws IllegalStateException if the block does not set a reducer.
  */
 fun <State : UniState, Action : UniAction> uniViewModelDSL(
   emptyState: State,
-  coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
   lambda: DslUnidirectionalViewModel<State, Action>.() -> Unit,
 ): DslUnidirectionalViewModel<State, Action> {
   val vm = DslUnidirectionalViewModel<State, Action>(emptyState)
@@ -45,7 +45,7 @@ fun <State : UniState, Action : UniAction> uniViewModelDSL(
     for (sideEffect in sideEffects) {
       val flow = sideEffect.observeActionToAction(actionFlow)
       viewModelScope.launch {
-        withContext(coroutineDispatcher) {
+        withContext(sideEffect.dispatcher) {
           flow.collect { dispatch(it) }
         }
       }
@@ -62,7 +62,6 @@ fun <State : UniState, Action : UniAction> uniViewModelDSL(
  */
 fun <State : UniState, Action : UniAction, DSL : DslUnidirectionalViewModel<State, Action>> uniViewModelDSL(
   customVm: DSL,
-  coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
   lambda: DSL.() -> Unit,
 ): DSL {
 
@@ -73,7 +72,7 @@ fun <State : UniState, Action : UniAction, DSL : DslUnidirectionalViewModel<Stat
     for (sideEffect in sideEffects) {
       val flow = sideEffect.observeActionToAction(actionFlow)
       viewModelScope.launch {
-        withContext(coroutineDispatcher) {
+        withContext(sideEffect.dispatcher) {
           flow.collect { dispatch(it) }
         }
       }
@@ -102,9 +101,17 @@ open class DslUnidirectionalViewModel<State : UniState, Action : UniAction> cons
    * Registers a side effect: a function that observes the action stream and maps it into new
    * actions, which is where async work such as network or database calls lives. Can be called
    * multiple times to register more than one effect.
+   *
+   * The effect's flow is collected on [dispatcher], which defaults to [Dispatchers.IO]. Pass a
+   * different dispatcher to pin an individual effect to a specific thread.
    */
-  fun effect(lambda: (actionFlow: Flow<Action>) -> Flow<Action>) {
+  fun effect(
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
+    lambda: (actionFlow: Flow<Action>) -> Flow<Action>,
+  ) {
+    val effectDispatcher = dispatcher
     mSideEffects.add(object : SideEffect<Action> {
+      override val dispatcher: CoroutineDispatcher = effectDispatcher
       override fun observeActionToAction(actionFlow: Flow<Action>): Flow<Action> {
         return lambda(actionFlow)
       }

@@ -15,3 +15,4 @@ and this project aims to follow [Semantic Versioning](https://semver.org/spec/v2
 ### Changed
 - **Breaking:** the type parameters of `UnidirectionalViewModel`, `UniViewModel`, `DslUnidirectionalViewModel`, `SideEffect`, and the `uniViewModelDSL` builders are now bound to `UniState` / `UniAction`. Existing `State` and `Action` types must implement these interfaces.
 - `uniViewModelDSL` now requires a `reducer`. Building without one fails fast with a clear message instead of silently leaving state unchanged.
+- **Breaking:** the dispatcher is now configured per effect rather than once for the whole ViewModel. `effect` takes an optional `dispatcher` (defaulting to `Dispatchers.IO`), and `SideEffect` exposes a `dispatcher` property. The ViewModel-wide `coroutineDispatcher` parameter has been removed from both `uniViewModelDSL` overloads and the `UniViewModel` constructor. With no effects, everything stays on `viewModelScope` (the main thread).

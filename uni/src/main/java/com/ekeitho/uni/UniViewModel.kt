@@ -3,8 +3,6 @@ package com.ekeitho.uni
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -14,7 +12,6 @@ import kotlinx.coroutines.withContext
 
 abstract class UniViewModel<State : UniState, Action : UniAction>(
     private val emptyState: State,
-    private val coroutineDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel(), UnidirectionalViewModel<State, Action> {
 
     private val mutex = Mutex()
@@ -25,7 +22,7 @@ abstract class UniViewModel<State : UniState, Action : UniAction>(
         for (sideEffect in sideEffects) {
             val flow = sideEffect.observeActionToAction(actionFlow)
             viewModelScope.launch {
-                withContext(coroutineDispatcher) {
+                withContext(sideEffect.dispatcher) {
                     flow.collect { dispatch(it) }
                 }
             }

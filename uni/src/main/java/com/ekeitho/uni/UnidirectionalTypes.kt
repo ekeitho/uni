@@ -1,6 +1,8 @@
 package com.ekeitho.uni
 
 import androidx.lifecycle.LiveData
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 
 /**
@@ -25,5 +27,11 @@ interface UnidirectionalViewModel<State : UniState, Action : UniAction> {
 }
 
 interface SideEffect<Action : UniAction> {
+    /**
+     * The [CoroutineDispatcher] this effect's flow is collected on. Defaults to
+     * [Dispatchers.IO] so async work such as network or database calls runs off the
+     * main thread. Override it to pin a specific effect to a specific thread.
+     */
+    val dispatcher: CoroutineDispatcher get() = Dispatchers.IO
     fun observeActionToAction(actionFlow: Flow<Action>): Flow<Action>
 }
