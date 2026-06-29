@@ -1,5 +1,7 @@
 package com.ekeitho.unidirectional.wikipedia
 
+import com.ekeitho.uni.UniAction
+import com.ekeitho.uni.UniState
 import com.ekeitho.uni.uniViewModelDSL
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
@@ -12,8 +14,8 @@ data class Wiki(
     private val wikiService: WikiService,
 ) {
 
-    data class State(val wikiResponse: WikiResponse? = null)
-    sealed class Action {
+    data class State(val wikiResponse: WikiResponse? = null) : UniState
+    sealed class Action : UniAction {
         object FetchRandomWikiAction : Action()
         data class WikiResponseAction(val wikiResponse: WikiResponse) : Action()
     }

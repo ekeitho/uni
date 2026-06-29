@@ -1,6 +1,8 @@
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.viewModelScope
 import com.ekeitho.uni.DslUnidirectionalViewModel
+import com.ekeitho.uni.UniAction
+import com.ekeitho.uni.UniState
 import com.ekeitho.uni.uniViewModelDSL
 import com.jraska.livedata.test
 import kotlinx.coroutines.CoroutineDispatcher
@@ -21,9 +23,9 @@ class UniTest {
         val pageNum: Int = 0,
         val sideEffectNum: Int = 0,
         val testNum: Int = 0,
-    )
+    ) : UniState
 
-    sealed class Action {
+    sealed class Action : UniAction {
         data class UpdatePageNum(val num: Int) : Action()
         data class SideEffectNum(val num: Int) : Action()
         object TestSend : Action()
@@ -140,9 +142,16 @@ class UniTest {
 
         assert(test.valueHistory() == (0..10000).map { State(pageNum = it, 0) })
     }
+
+    @Test(expected = IllegalStateException::class)
+    fun testBuildingWithoutReducerThrows() {
+        testUniViewModelDSL<State, Action>(State()) {
+            // no reducer provided on purpose
+        }
+    }
 }
 
-private fun <State, Action> testUniViewModelDSL(
+private fun <State : UniState, Action : UniAction> testUniViewModelDSL(
     emptyState: State,
     dispatcher: CoroutineDispatcher = Dispatchers.Main,
     lambda: DslUnidirectionalViewModel<State, Action>.() -> Unit,
